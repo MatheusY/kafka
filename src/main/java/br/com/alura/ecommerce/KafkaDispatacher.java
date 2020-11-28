@@ -13,7 +13,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 class KafkaDispatacher<T> implements Closeable{
 
-	private KafkaProducer<String, String> producer;
+	private KafkaProducer<String, T> producer;
 
 	public KafkaDispatacher() {
 		producer = new KafkaProducer<>(properties());
@@ -23,7 +23,7 @@ class KafkaDispatacher<T> implements Closeable{
 		var properties = new Properties();
 		properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
 		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GsonSerializer.class.getName());
 		return properties;
 	}
 
