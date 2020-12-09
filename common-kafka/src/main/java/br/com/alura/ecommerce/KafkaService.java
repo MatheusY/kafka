@@ -14,7 +14,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 class KafkaService<T> implements Closeable{
 
-	private KafkaConsumer<String, T> consumer;
+	private KafkaConsumer<String, Message<T>> consumer;
 	private final ConsumerFunction<T> parse;
 
 	public KafkaService(String groupId, String topic, ConsumerFunction parse, Class<T> type, Map<String, String> properties) {
@@ -57,7 +57,6 @@ class KafkaService<T> implements Closeable{
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
 		properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
-		properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.getName());
 		properties.putAll(overrideProperties);
 		return properties;
 	}
