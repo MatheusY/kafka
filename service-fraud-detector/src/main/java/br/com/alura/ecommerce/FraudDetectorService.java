@@ -19,9 +19,10 @@ public class FraudDetectorService {
 	
 	private final KafkaDispatacher<Order> orderDispatacher = new KafkaDispatacher<>();
 	
-	private void parse(ConsumerRecord<String, Order> record) throws InterruptedException, ExecutionException {
+	private void parse(ConsumerRecord<String, Message<Order>> record) throws InterruptedException, ExecutionException {
 		System.out.println("-----------------------------------");
 		System.out.println("Processing new order, checking for fraud");
+		var message = record.value();
 		System.out.println(record.key());
 		System.out.println(record.value());
 		System.out.println(record.partition());
@@ -31,13 +32,13 @@ public class FraudDetectorService {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		var order = record.value();
+		var order = message.getPayload();
 		if (isFraud(order)) {
 			System.out.println("Order is a fraud!");
-			orderDispatacher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
+			orderDispatacher.send("ECOMMERCE_ORDER_REJECTED", order.getEmail(), message.getId().continueWith(FraudDetectorService.class.getSimpleName()), order);
 		} else {
 			System.out.println("Approved " + order);
-			orderDispatacher.send("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
+			orderDispatacher.send("ECOMMERCE_ORDER_APPROVED", order.getEmail(), message.getId().continueWith(FraudDetectorService.class.getSimpleName()), order);
 		}
 	}
 
