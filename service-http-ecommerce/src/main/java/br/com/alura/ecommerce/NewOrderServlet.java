@@ -11,18 +11,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import br.com.alura.ecommerce.dispatcher.KafkaDispatacher;
+
 public class NewOrderServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 	
 	private final KafkaDispatacher<Order> orderDispatcher = new KafkaDispatacher<>();
-	private final KafkaDispatacher<String> emailDispatacher = new KafkaDispatacher<>();
 
 	@Override
 	public void destroy() {
 		super.destroy();
 		orderDispatcher.close();
-		emailDispatacher.close();
 	}
 
 	@Override
@@ -34,8 +34,6 @@ public class NewOrderServlet extends HttpServlet {
 			var order = new Order(orderId, amount, email);
 			orderDispatcher.send("ECOMMERCE_NEW_ORDER", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), order);
 
-			var emailCode = "Welcome we are processing your order";
-			emailDispatacher.send("ECOMMERCE_SEND_EMAIL", email, new CorrelationId(NewOrderServlet.class.getSimpleName()), emailCode);
 			System.out.println("New order sent successfully");
 			resp.setStatus(HttpServletResponse.SC_OK);
 			resp.getWriter().println("New order sent");

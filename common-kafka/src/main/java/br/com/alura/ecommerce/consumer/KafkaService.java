@@ -1,4 +1,4 @@
-package br.com.alura.ecommerce;
+package br.com.alura.ecommerce.consumer;
 
 import java.io.Closeable;
 import java.time.Duration;
@@ -13,7 +13,11 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-class KafkaService<T> implements Closeable {
+import br.com.alura.ecommerce.Message;
+import br.com.alura.ecommerce.dispatcher.GsonSerializer;
+import br.com.alura.ecommerce.dispatcher.KafkaDispatacher;
+
+public class KafkaService<T> implements Closeable {
 
 	private KafkaConsumer<String, Message<T>> consumer;
 	private final ConsumerFunction<T> parse;
@@ -34,7 +38,7 @@ class KafkaService<T> implements Closeable {
 		this.consumer = new KafkaConsumer<>(getProperties(groupId, properties));
 	}
 
-	void run() throws InterruptedException, ExecutionException {
+	public void run() throws InterruptedException, ExecutionException {
 		try (var deadLetter = new KafkaDispatacher<>()) {
 			while (true) {
 				var records = consumer.poll(Duration.ofMillis(100));
